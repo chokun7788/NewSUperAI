@@ -20,8 +20,16 @@ if sys.platform == "win32":
 
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_DIR.parent
+<<<<<<< HEAD
+MODEL_NAME = "convnextv2_thev1_best_for_good.pkl"
+MODEL_PATH = APP_DIR / MODEL_NAME
+MODEL_URL = os.getenv("MODEL_URL", "").strip()
+MODEL_CACHE_DIR = Path.home() / ".streamlit_model_cache"
+IMAGE_DIR = APP_DIR / "Image"
+=======
 MODEL_PATH = APP_DIR / "convnextv2_thev1_best_for_good.pkl"
 IMAGE_DIR = PROJECT_ROOT / "Image"
+>>>>>>> 0342be8d49fc2a61a2c06f0e658df47e1a59baa9
 CLASS_ORDER = ["Blood", "Diarrhea", "Green", "Mucus", "Normal", "Yellow"]
 
 UI = {
@@ -689,46 +697,30 @@ LANG = "th" if language_choice == "ไทย" else "en"
 T = UI[LANG]
 
 
+def download_model(url: str, destination: Path):
+    if destination.exists():
+        return load_learner(destination)
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    urllib.request.urlretrieve(url, destination)
+    return load_learner(destination)
+
+
 @st.cache_resource(show_spinner=False)
-def load_model(model_path: Path):
-    """Load model from local path or download from GitHub Releases if not found."""
-    
-    # Try local path first
-    if model_path.exists():
-        return load_learner(model_path)
-    
-    # If not found locally, download from GitHub Releases
-    model_filename = model_path.name
-    model_cache_dir = Path.home() / ".streamlit_model_cache"
-    model_cache_dir.mkdir(parents=True, exist_ok=True)
-    
-    cached_model_path = model_cache_dir / model_filename
-    
-    if cached_model_path.exists():
-        return load_learner(cached_model_path)
-    
-    # Download from GitHub Releases
-    try:
-        st.info("⏳ Downloading model (~110MB)... This may take a minute.")
-        
-        github_release_url = "https://github.com/thanithpol2545/Super-AI-Hack-OPEN/releases/download/v1.0/convnextv2_thev1_best_for_good.pkl"
-        
-        def download_progress_hook(block_num, block_size, total_size):
-            if total_size > 0:
-                downloaded = block_num * block_size
-                percent = min(100, int(100 * downloaded / total_size))
-                if percent % 10 == 0 and percent > 0:
-                    st.write(f"Downloaded: {percent}%")
-        
-        urllib.request.urlretrieve(github_release_url, cached_model_path, download_progress_hook)
-        st.success("✅ Model downloaded successfully!")
-        
-        return load_learner(cached_model_path)
-    
-    except Exception as e:
-        error_msg = f"Failed to load model: {str(e)}\nPlease ensure the model file exists or check your internet connection."
-        st.error(error_msg)
-        raise FileNotFoundError(error_msg)
+def load_model(model_path: Path, model_url: str = ""):
+    """Load model from local path or download it when a URL is configured."""
+    local_paths = [model_path, PROJECT_ROOT / model_path.name]
+    for path in local_paths:
+        if path.exists():
+            return load_learner(path)
+
+    if model_url:
+        return download_model(model_url, MODEL_CACHE_DIR / model_path.name)
+
+    raise FileNotFoundError(
+        f"Model file not found at {model_path} or {PROJECT_ROOT / model_path.name}.\n"
+        "Set MODEL_URL in the Streamlit app settings or place the .pkl file in Prototype/ or project root."
+    )
 
 
 def class_text(class_name: str):
@@ -1122,7 +1114,7 @@ with st.sidebar:
 
 try:
     with st.spinner(T["load_model"]):
-        learner = load_model(MODEL_PATH)
+        learner = load_model(MODEL_PATH, MODEL_URL)
 except Exception as exc:
     st.error(f"{T['model_error']}: {exc}")
     st.stop()
