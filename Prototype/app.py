@@ -29,7 +29,7 @@ IMAGE_DIR = APP_DIR / "Image"
 =======
 MODEL_PATH = APP_DIR / "convnextv2_thev1_best_for_good.pkl"
 IMAGE_DIR = PROJECT_ROOT / "Image"
->>>>>>> 0342be8d49fc2a61a2c06f0e658df47e1a59baa9
+
 CLASS_ORDER = ["Blood", "Diarrhea", "Green", "Mucus", "Normal", "Yellow"]
 
 UI = {
