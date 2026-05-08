@@ -691,16 +691,33 @@ T = UI[LANG]
 
 
 def load_model(local_path: Path):
-    """Load model from a local path."""
+    """Load model from a local path, with patch for fastai load_learner UnboundLocalError bug."""
+    import pickle
+
     candidate_paths = [local_path, PROJECT_ROOT / local_path.name]
+    model_path = None
     for path in candidate_paths:
         if path.exists():
-            return load_learner(path)
+            model_path = path
+            break
 
-    raise FileNotFoundError(
-        f"Model file not found. Tried: {candidate_paths[0]} and {candidate_paths[1]}.\n"
-        "Place convnextv2_thev1_best_for_good.pkl in Prototype/ or the project root."
-    )
+    if model_path is None:
+        raise FileNotFoundError(
+            f"Model file not found. Tried: {candidate_paths[0]} and {candidate_paths[1]}.\n"
+            "Place convnextv2_thev1_best_for_good.pkl in Prototype/ or the project root."
+        )
+
+    # Try normal load first; fall back to manual pickle if fastai has the UnboundLocalError bug
+    try:
+        return load_learner(model_path, cpu=True)
+    except UnboundLocalError:
+        with open(model_path, "rb") as f:
+            res = pickle.load(f)
+        res = res.cpu()
+        res.dls.cpu()
+        if hasattr(res, "to_fp32"):
+            res.to_fp32()
+        return res
 
 
 def class_text(class_name: str):
@@ -1096,9 +1113,7 @@ try:
     with st.spinner(T["load_model"]):
         learner = load_model(MODEL_PATH)
 except Exception as exc:
-    import traceback
     st.error(f"{T['model_error']}: {exc}")
-    st.code(traceback.format_exc(), language="python")
     st.stop()
 
 
