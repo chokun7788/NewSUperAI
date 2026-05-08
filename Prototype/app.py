@@ -20,11 +20,11 @@ if sys.platform == "win32":
 
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_DIR.parent
-MODEL_NAME = "convnextv2_thev1_best_for_good.pkl"
-MODEL_PATH = APP_DIR / MODEL_NAME
+MODEL_NAME = os.getenv("MODEL_NAME", "convnextv2_thev1_best_for_good.pkl").strip()
+MODEL_PATH = Path(os.getenv("MODEL_PATH", "").strip() or APP_DIR / MODEL_NAME)
 MODEL_URL = os.getenv("MODEL_URL", "").strip()
 MODEL_CACHE_DIR = Path.home() / ".streamlit_model_cache"
-IMAGE_DIR = APP_DIR / "Image"
+IMAGE_DIR = PROJECT_ROOT / "Image"
 CLASS_ORDER = ["Blood", "Diarrhea", "Green", "Mucus", "Normal", "Yellow"]
 
 UI = {
@@ -704,7 +704,12 @@ def download_model(url: str, destination: Path):
 @st.cache_resource(show_spinner=False)
 def load_model(model_path: Path, model_url: str = ""):
     """Load model from local path or download it when a URL is configured."""
-    local_paths = [model_path, PROJECT_ROOT / model_path.name]
+    local_paths = [
+        model_path,
+        PROJECT_ROOT / model_path.name,
+        APP_DIR / "ModelAI" / model_path.name,
+        PROJECT_ROOT / "ModelAI" / model_path.name,
+    ]
     for path in local_paths:
         if path.exists():
             return load_learner(path)
@@ -712,9 +717,10 @@ def load_model(model_path: Path, model_url: str = ""):
     if model_url:
         return download_model(model_url, MODEL_CACHE_DIR / model_path.name)
 
+    paths_text = ", ".join(str(p) for p in local_paths)
     raise FileNotFoundError(
-        f"Model file not found at {model_path} or {PROJECT_ROOT / model_path.name}.\n"
-        "Set MODEL_URL in the Streamlit app settings or place the .pkl file in Prototype/ or project root."
+        f"Model file not found. Looked in: {paths_text}.\n"
+        "Set MODEL_URL in the Streamlit app settings, set MODEL_PATH, or place the .pkl file in Prototype/ or project root."
     )
 
 
