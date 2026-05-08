@@ -1,0 +1,13 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Streamlit cache
+.streamlit_model_cache/
+
+# Local model file
+convnextv2_thev1_best_for_good.pkl
+
+# IDE/editor
+.vscode/
+.idea/
