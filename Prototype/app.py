@@ -20,7 +20,7 @@ if sys.platform == "win32":
 
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_DIR.parent
-MODEL_PATH = PROJECT_ROOT / "convnextv2_thev1_best_for_good.pkl"
+MODEL_PATH = APP_DIR / "convnextv2_thev1_best_for_good.pkl"
 IMAGE_DIR = PROJECT_ROOT / "Image"
 CLASS_ORDER = ["Blood", "Diarrhea", "Green", "Mucus", "Normal", "Yellow"]
 
