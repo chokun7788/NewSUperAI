@@ -964,13 +964,13 @@ Current model-analysis context:
 
     try:
         client = OpenAI(api_key=api_key)
-        response = client.responses.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-5-nano"),
-            instructions=system_prompt,
-            input=conversation,
-            max_output_tokens=350,
+        messages = [{"role": "system", "content": system_prompt}] + conversation
+        response = client.chat.completions.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=messages,
+            max_tokens=350,
         )
-        return response.output_text.strip()
+        return response.choices[0].message.content.strip()
     except Exception as exc:
         st.warning(f"{T['support_api_error']}: {exc}")
         return None
@@ -1170,4 +1170,3 @@ with right_col:
             )
         else:
             st.info(T["press_analyze"])
-
