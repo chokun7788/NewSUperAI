@@ -25,6 +25,7 @@ MODEL_PATH = Path(os.getenv("MODEL_PATH", "").strip() or APP_DIR / MODEL_NAME)
 MODEL_URL = os.getenv("MODEL_URL", "").strip()
 MODEL_CACHE_DIR = Path.home() / ".streamlit_model_cache"
 IMAGE_DIR = PROJECT_ROOT / "Image"
+
 CLASS_ORDER = ["Blood", "Diarrhea", "Green", "Mucus", "Normal", "Yellow"]
 
 UI = {
@@ -1192,4 +1193,3 @@ with right_col:
         else:
             st.info(T["press_analyze"])
 
-st.caption("Ai Builder Season 5")
