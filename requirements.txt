@@ -1,10 +1,10 @@
 streamlit==1.28.1
 torch
 torchvision
-fastai==2.7.12
-plotly==5.14.0
-openai==0.27.8
-pillow==10.0.0
+fastai
+plotly
+openai
+pillow
 pandas==1.5.3
 numpy==1.24.3
 timm==0.9.6
