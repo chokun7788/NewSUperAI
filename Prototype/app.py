@@ -3,7 +3,6 @@ import io
 import os
 import pathlib
 import sys
-import urllib.request
 from pathlib import Path
 
 import pandas as pd
@@ -20,10 +19,8 @@ if sys.platform == "win32":
 
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_DIR.parent
-MODEL_NAME = os.getenv("MODEL_NAME", "convnextv2_thev1_best_for_good.pkl").strip()
-MODEL_PATH = Path(os.getenv("MODEL_PATH", "").strip() or APP_DIR / MODEL_NAME)
-MODEL_URL = os.getenv("MODEL_URL", "").strip()
-MODEL_CACHE_DIR = Path.home() / ".streamlit_model_cache"
+MODEL_NAME = "convnextv2_thev1_best_for_good.pkl"
+MODEL_PATH = APP_DIR / MODEL_NAME
 IMAGE_DIR = PROJECT_ROOT / "Image"
 
 CLASS_ORDER = ["Blood", "Diarrhea", "Green", "Mucus", "Normal", "Yellow"]
@@ -693,35 +690,16 @@ LANG = "th" if language_choice == "ไทย" else "en"
 T = UI[LANG]
 
 
-def download_model(url: str, destination: Path):
-    if destination.exists():
-        return load_learner(destination)
-
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    urllib.request.urlretrieve(url, destination)
-    return load_learner(destination)
-
-
-@st.cache_resource(show_spinner=False)
-def load_model(model_path: Path, model_url: str = ""):
-    """Load model from local path or download it when a URL is configured."""
-    local_paths = [
-        model_path,
-        PROJECT_ROOT / model_path.name,
-        APP_DIR / "ModelAI" / model_path.name,
-        PROJECT_ROOT / "ModelAI" / model_path.name,
-    ]
-    for path in local_paths:
+def load_model(local_path: Path):
+    """Load model from a local path."""
+    candidate_paths = [local_path, PROJECT_ROOT / local_path.name]
+    for path in candidate_paths:
         if path.exists():
             return load_learner(path)
 
-    if model_url:
-        return download_model(model_url, MODEL_CACHE_DIR / model_path.name)
-
-    paths_text = ", ".join(str(p) for p in local_paths)
     raise FileNotFoundError(
-        f"Model file not found. Looked in: {paths_text}.\n"
-        "Set MODEL_URL in the Streamlit app settings, set MODEL_PATH, or place the .pkl file in Prototype/ or project root."
+        f"Model file not found. Tried: {candidate_paths[0]} and {candidate_paths[1]}.\n"
+        "Place convnextv2_thev1_best_for_good.pkl in Prototype/ or the project root."
     )
 
 
@@ -1116,7 +1094,7 @@ with st.sidebar:
 
 try:
     with st.spinner(T["load_model"]):
-        learner = load_model(MODEL_PATH, MODEL_URL)
+        learner = load_model(MODEL_PATH)
 except Exception as exc:
     st.error(f"{T['model_error']}: {exc}")
     st.stop()
