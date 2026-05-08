@@ -20,13 +20,11 @@ if sys.platform == "win32":
 
 APP_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = APP_DIR.parent
-<<<<<<< HEAD
 MODEL_NAME = "convnextv2_thev1_best_for_good.pkl"
 MODEL_PATH = APP_DIR / MODEL_NAME
 MODEL_URL = os.getenv("MODEL_URL", "").strip()
 MODEL_CACHE_DIR = Path.home() / ".streamlit_model_cache"
 IMAGE_DIR = APP_DIR / "Image"
-=======
 MODEL_PATH = APP_DIR / "convnextv2_thev1_best_for_good.pkl"
 IMAGE_DIR = PROJECT_ROOT / "Image"
 
@@ -1191,4 +1189,3 @@ with right_col:
         else:
             st.info(T["press_analyze"])
 
-st.caption("Ai Builder Season 5")
